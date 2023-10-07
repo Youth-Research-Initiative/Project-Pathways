@@ -76,6 +76,7 @@ st.title("Project Pathways Alpha")
 st.header("Region")
 inputRegion = st.selectbox("Select Your region", dfPopulation.region.unique())
 inputState = inputRegion.split(", ")[1]
+stateAbrev = us_state_to_abbrev[inputState]
 
 
 def getDifficulty(inputRegion, inputState, year=2023):
