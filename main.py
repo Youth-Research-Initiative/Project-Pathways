@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import math
+import plotly.express as px  # Import Plotly Express for plotting
 
 st.set_page_config(
     page_title="Project Pathways Alpha",
@@ -152,6 +153,36 @@ if page == "Home":
                 st.write(f"The number of ISEF finalists from {county}: {math.ceil(FinalistsRegional)}")
                 st.write(f"Difficulty: {round(county_difficulty, 3)}")
                 st.write(f"Normalized Difficulty Heuristic for {stateName}: {round(normalized_difficulty, 3)}")
+
+                # Line chart for population over the years
+                population_years = dfPopulation.loc[dfPopulation['county'] == inputRegion, ['2016', '2017', '2018', '2019',
+                                                                                        '2020', '2021']]
+                population_years = population_years.transpose().reset_index()
+                population_years.columns = ['Year', 'Population']
+                population_line_chart = px.line(population_years, x='Year', y='Population', title=f'Population Trend in {inputRegion}')
+
+                # Bar graph for the number of ISEF qualifiers over the years
+                isef_qualifiers_years = dfIsefdb[dfIsefdb['country'] == "United States of America"]
+                isef_qualifiers_years = isef_qualifiers_years[isef_qualifiers_years['State'].str.contains(stateAbrev)]
+                isef_qualifiers_years = isef_qualifiers_years.groupby('year').size().reset_index(name='Count')
+                isef_qualifiers_bar_chart = px.bar(isef_qualifiers_years, x='year', y='Count',
+                                                    title=f'Number of ISEF Qualifiers from {inputState}')
+
+                # Create the pie chart
+                pie_data = dfIsefdb[dfIsefdb['country'] == "United States of America"]
+                pie_data = pie_data[pie_data['State'].str.contains(stateAbrev)]
+                pie_data = pie_data[pie_data['year'] == int(year)]
+
+                # Group by county and category, and count the number of projects
+                pie_data = pie_data.groupby(['category', 'State']).size().reset_index(name='Count')
+
+                # Create the pie chart
+                category_pie_chart = px.pie(pie_data, values='Count', names='category', title=f'Number of Projects per Category in {stateName}')
+
+                # Display the pie chart
+                st.plotly_chart(category_pie_chart)
+                st.plotly_chart(isef_qualifiers_bar_chart)
+                st.plotly_chart(population_line_chart)
 
         getDifficulty(inputRegion, inputState, year)
 
