@@ -71,7 +71,6 @@ us_state_to_abbrev = {
     "U.S. Virgin Islands": "VI",
 }
 
-
 # Streamlit Sidebar
 st.sidebar.title("Navigation")
 page = st.sidebar.selectbox("Select Page", ["Home", "About"])
@@ -112,14 +111,8 @@ if page == "Home":
             noIsefFinalistsState = isefFinalistsState.shape[0]
             finalistState = dfIsefdb[(dfIsefdb['country'] == "United States of America") & (dfIsefdb['State'].str.contains(stateAbrev)) & dfIsefdb['year'] == int(year)]
             noFinalistsState = finalistState.shape[0]
-            st.write(f"population of {inputRegion}: {populationMetric}")
-            st.write(f"population of {inputState} {populationState}")
-            st.write(f"number of ISEF Finalists: {noIsefFinalistsState}")
-            st.write(f"number of Finalists from {inputState} : {noFinalistsState}")
             isefFinalistsRegional = (populationMetric * noIsefFinalistsState) / populationState
             FinalistsRegional = (populationMetric * noFinalistsState) / populationState
-            st.write(f"the number of successful ISEF finalists from {inputRegion}: {math.ceil(isefFinalistsRegional)}")
-            st.write(f"the number of ISEF finalists from {inputRegion}: {math.ceil(FinalistsRegional)}")
 
             # Calculate the difficulty
             difficulty = (math.log(populationMetric, 10)) / (math.sqrt(FinalistsRegional + 1) * (1 + math.pow(math.e, -isefFinalistsRegional)))
@@ -132,37 +125,33 @@ if page == "Home":
                     stateName = state
                     break
 
-                if stateName:
-                    # Calculate the counties in the state manually
-                    counties_in_state = dfPopulation[dfPopulation['county'].str.contains(stateName)]['county']
+            if stateName:
+                # Calculate the counties in the state manually
+                counties_in_state = dfPopulation[dfPopulation['county'].str.contains(stateName)]['county']
 
-                    # Create a list to store individual difficulty values for each county in the state
-                    difficulty_values = []
+                # Create a list to store individual difficulty values for each county in the state
+                difficulty_values = []
 
-                    for county in counties_in_state:
-                                            # Calculate difficulty for each county
-                        county_difficulty = (math.log(populationMetric, 10)) / (math.sqrt(FinalistsRegional + 1) * (1 + math.pow(math.e, -isefFinalistsRegional)))
-                        difficulty_values.append(county_difficulty)
+                for county in counties_in_state:
+                    # Calculate difficulty for each county
+                    county_difficulty = (math.log(populationMetric, 10)) / (math.sqrt(FinalistsRegional + 1) * (1 + math.pow(math.e, -isefFinalistsRegional)))
+                    difficulty_values.append(county_difficulty)
 
-                    populationRegion = dfPopulation[dfPopulation['county'] == county]
-                    populationMetric = populationRegion[year].values[0]
-                    populationState = dfPopulation[dfPopulation['county'].str.contains(stateName)].sum()[year]
-                    normalized_difficulty = sum(difficulty_values) / len(difficulty_values)
+                populationRegion = dfPopulation[dfPopulation['county'] == county]
+                populationMetric = populationRegion[year].values[0]
+                populationState = dfPopulation[dfPopulation['county'].str.contains(stateName)].sum()[year]
+                normalized_difficulty = sum(difficulty_values) / len(difficulty_values)
 
-                    # Display the results for each county
-                    st.write(f"County: {county}")
-                    st.write(f"population of {county}: {populationMetric}")
-                    st.write(f"population of {stateName} {populationState}")
-                    st.write(f"number of ISEF Finalists: {noIsefFinalistsState}")
-                    st.write(f"number of Finalists from {county} : {noFinalistsState}")
-                    st.write(f"the number of successful ISEF finalists from {county}: {math.ceil(isefFinalistsRegional)}")
-                    st.write(f"the number of ISEF finalists from {county}: {math.ceil(FinalistsRegional)}")
-                    st.write(f"Difficulty: {round(county_difficulty, 3)}")
-                    st.write(f"Normalized Difficulty Heuristic for {stateName}: {round(normalized_difficulty, 3)}")
-
-
-                    # Calculate the normalized difficulty heuristic by averaging the individual difficulties
-
+                # Display the results for each county
+                st.write(f"County: {county}")
+                st.write(f"Population of {county}: {populationMetric}")
+                st.write(f"Population of {stateName}: {populationState}")
+                st.write(f"Number of ISEF Finalists: {noIsefFinalistsState}")
+                st.write(f"Number of Finalists from {county}: {noFinalistsState}")
+                st.write(f"The number of successful ISEF finalists from {county}: {math.ceil(isefFinalistsRegional)}")
+                st.write(f"The number of ISEF finalists from {county}: {math.ceil(FinalistsRegional)}")
+                st.write(f"Difficulty: {round(county_difficulty, 3)}")
+                st.write(f"Normalized Difficulty Heuristic for {stateName}: {round(normalized_difficulty, 3)}")
 
         getDifficulty(inputRegion, inputState, year)
 
